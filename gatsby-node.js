@@ -1,16 +1,12 @@
 const axios = require("axios");
-const { Client } = require("@googlemaps/google-maps-services-js");
 
 // Axios Config
-axios.defaults.baseURL = "https://go.outseta.com/api/v1/";
+axios.defaults.baseURL = `https://${process.env.OUTSETA_ID}.outseta.com/api/v1/`;
 axios.defaults.headers.common[
   "Authorization"
 ] = `Outseta ${process.env.OUTSETA_KEY}:${process.env.OUTSETA_SECRET}`;
 
-// Google Config
-const client = new Client({});
-
-const getActiveAccounts = async ({ page }) => {
+const getAccounts = async ({ page }) => {
   const { data } = await axios.get("/crm/accounts", {
     params: {
       limit: 25,
@@ -24,41 +20,6 @@ const getActiveAccounts = async ({ page }) => {
   return data.items;
 };
 
-const getLatLng = async ({ city, state, country }) => {
-  try {
-    const address = `${city}, ${state}, ${country}`;
-    const { data } = await client.geocode({
-      params: {
-        address,
-        key: process.env.GOOGLE_MAPS_API_KEY,
-      },
-    });
-
-    return data.results[0].geometry.location;
-  } catch (error) {
-    return null;
-  }
-};
-
-exports.onCreateNode = async (gatsbyUtils) => {
-  const { node, actions, reporter } = gatsbyUtils;
-  const { createNodeField } = actions;
-
-  if (node.internal.type === `OutsetaAccount`) {
-    const location = await getLatLng(node);
-
-    createNodeField({
-      node,
-      name: `location`,
-      value: location,
-    });
-
-    reporter.info(
-      `Created Location ${location?.lat}/${location?.lng} for ${node.id}`
-    );
-  }
-};
-
 exports.sourceNodes = async (gatsbyUtils) => {
   const { actions, createNodeId, createContentDigest } = gatsbyUtils;
   const { createNode } = actions;
@@ -67,7 +28,7 @@ exports.sourceNodes = async (gatsbyUtils) => {
   let more = false;
 
   do {
-    const accounts = await getActiveAccounts({ page });
+    const accounts = await getAccounts({ page });
 
     gatsbyUtils.reporter.info(
       `Fetched Outseta Accounts >>> ${accounts.length} with offset ${page}`
@@ -79,17 +40,19 @@ exports.sourceNodes = async (gatsbyUtils) => {
         Address = account.BillingAddress;
       }
 
-      createNode({
-        id: createNodeId(`outseta-account-${account.Uid}`),
-        internal: {
-          type: "OutsetaAccount",
-          content: JSON.stringify(account),
-          contentDigest: createContentDigest(account),
-        },
-        city: Address?.City,
-        state: Address?.State,
-        country: Address?.Country,
-      });
+      if (Address?.City || Address?.State || Address?.Country) {
+        createNode({
+          id: createNodeId(`outseta-account-${account.Uid}`),
+          internal: {
+            type: "OutsetaAccount",
+            content: JSON.stringify(account),
+            contentDigest: createContentDigest(account),
+          },
+          city: Address?.City,
+          state: Address?.State,
+          country: Address?.Country,
+        });
+      }
     }
 
     page += 1;

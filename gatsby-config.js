@@ -10,5 +10,11 @@ module.exports = {
         emoji: "🌐",
       },
     },
+    {
+      resolve: "gatsby-plugin-react-leaflet",
+      options: {
+        linkStyles: true,
+      },
+    },
   ],
 };

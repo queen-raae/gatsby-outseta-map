@@ -14,13 +14,17 @@
     "clean": "gatsby clean"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.30",
     "@raae/gatsby-plugin-svg-emoji-favicon": "^0.1.5",
     "@raae/gatsby-theme-queen": "^0.2.0",
     "axios": "^1.4.0",
     "gatsby": "5.9.0",
+    "gatsby-plugin-react-leaflet": "^4.0.3",
     "gatsby-source-filesystem": "5.9.0",
+    "leaflet": "^1.9.3",
     "prismjs": "1.29.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-leaflet": "^4.2.1"
   }
 }
