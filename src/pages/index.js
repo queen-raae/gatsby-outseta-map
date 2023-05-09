@@ -4,25 +4,17 @@ const IndexPage = () => {
   return (
     <main>
       <header>
-        <h1>
-          <span role="img" aria-label="Party popper emoji">
-            🎉&nbsp;
-          </span>
-          Awsome Demo
-          <span role="img" aria-label="Party popper emoji">
-            &nbsp;🎉
-          </span>
-        </h1>
-        <p>A demo for all the things!</p>
+        <h1>Outseta Customers Mapped</h1>
       </header>
       <section>
-        <form>
-          <fieldset>
-            <label htmlFor="email">Your email address:</label>
-            <input id="email" name="email" type="email" required />
-            <button type="submit">Button</button>
-          </fieldset>
-        </form>
+        <ol>
+          <li>Source the customers</li>
+          <li>Make sure they show up in GraphiQL</li>
+          <li>List the customers</li>
+          <li>Add address to lat/lng step when sourcing</li>
+          <li>Install React Leaflet</li>
+          <li>Add customers to the map</li>
+        </ol>
       </section>
     </main>
   );

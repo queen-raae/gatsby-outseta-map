@@ -1,11 +1,14 @@
+require("dotenv").config({
+  path: `.env.${process.env.NODE_ENV}`,
+});
+
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-filesystem`,
+      resolve: "@raae/gatsby-plugin-svg-emoji-favicon",
       options: {
-        path: `${__dirname}/content`,
+        emoji: "🌐",
       },
     },
-    `@raae/gatsby-theme-queen`,
   ],
 };
