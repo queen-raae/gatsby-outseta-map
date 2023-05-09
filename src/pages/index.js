@@ -1,6 +1,7 @@
-import React from "react";
+import * as React from "react";
+import { graphql } from "gatsby";
 
-const IndexPage = () => {
+const IndexPage = ({ data }) => {
   return (
     <main>
       <header>
@@ -16,8 +17,39 @@ const IndexPage = () => {
           <li>Add customers to the map</li>
         </ol>
       </section>
+      <section>
+        <ul>
+          {data.allOutsetaAccount.nodes.map((node) => {
+            return (
+              <li>
+                {node.city}, {node.state}, {node.country}
+                <br />
+                {node.fields.location?.lat}/{node.fields.location?.lng}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </main>
   );
 };
+
+export const query = graphql`
+  query {
+    allOutsetaAccount(filter: {}) {
+      nodes {
+        city
+        country
+        state
+        fields {
+          location {
+            lat
+            lng
+          }
+        }
+      }
+    }
+  }
+`;
 
 export default IndexPage;
