@@ -1,8 +1,14 @@
 const axios = require("axios");
+const { Client } = require("@googlemaps/google-maps-services-js");
+
+// Axios Config
 axios.defaults.baseURL = "https://go.outseta.com/api/v1/";
 axios.defaults.headers.common[
   "Authorization"
 ] = `Outseta ${process.env.OUTSETA_KEY}:${process.env.OUTSETA_SECRET}`;
+
+// Google Config
+const client = new Client({});
 
 const getActiveAccounts = async ({ page }) => {
   const { data } = await axios.get("/crm/accounts", {
@@ -16,6 +22,41 @@ const getActiveAccounts = async ({ page }) => {
   });
 
   return data.items;
+};
+
+const getLatLng = async ({ city, state, country }) => {
+  try {
+    const address = `${city}, ${state}, ${country}`;
+    const { data } = await client.geocode({
+      params: {
+        address,
+        key: process.env.GOOGLE_MAPS_API_KEY,
+      },
+    });
+
+    return data.results[0].geometry.location;
+  } catch (error) {
+    return null;
+  }
+};
+
+exports.onCreateNode = async (gatsbyUtils) => {
+  const { node, actions, reporter } = gatsbyUtils;
+  const { createNodeField } = actions;
+
+  if (node.internal.type === `OutsetaAccount`) {
+    const location = await getLatLng(node);
+
+    createNodeField({
+      node,
+      name: `location`,
+      value: location,
+    });
+
+    reporter.info(
+      `Created Location ${location?.lat}/${location?.lng} for ${node.id}`
+    );
+  }
 };
 
 exports.sourceNodes = async (gatsbyUtils) => {
@@ -33,9 +74,9 @@ exports.sourceNodes = async (gatsbyUtils) => {
     );
 
     for (const account of accounts) {
-      let address = account.MailingAddress;
-      if (!account.MailingAddress.Country) {
-        address = account.BillingAddress;
+      let Address = account.MailingAddress;
+      if (!account.MailingAddress?.Country) {
+        Address = account.BillingAddress;
       }
 
       createNode({
@@ -45,7 +86,9 @@ exports.sourceNodes = async (gatsbyUtils) => {
           content: JSON.stringify(account),
           contentDigest: createContentDigest(account),
         },
-        ...address,
+        city: Address?.City,
+        state: Address?.State,
+        country: Address?.Country,
       });
     }
 
