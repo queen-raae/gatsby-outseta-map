@@ -1,5 +1,5 @@
 :root {
-  --border-radius: 5px;
+  --border-radius: 2px;
   --border-width: 5px;
   --color-primary: #ec4326;
   --color-secondary: #f2a220;
@@ -32,10 +32,42 @@ body {
   margin: 0;
 }
 
-main {
+a[href^="/"] {
+  display: block;
+  background-color: var(--color-primary);
+  color: var(--color-text-contrast);
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-size: smaller;
+  border-radius: var(--border-radius);
+}
+
+ul,
+ol {
+  font-size: smaller;
+}
+
+main.home {
   padding: 0 0.75em;
   min-height: 100%;
   max-width: 28em;
   margin: 3em auto;
   min-height: calc(100vh - var(--border-width));
+}
+
+main.map {
+  position: relative;
+  height: calc(100vh - var(--border-width));
+}
+
+main.map > div {
+  z-index: 1;
+  height: calc(100vh - var(--border-width));
+}
+
+main.map > a {
+  position: absolute;
+  z-index: 2;
+  bottom: 1rem;
+  left: 1rem;
 }

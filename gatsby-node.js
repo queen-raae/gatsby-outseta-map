@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { Client } = require("@googlemaps/google-maps-services-js");
 
 // Axios Config
 axios.defaults.baseURL = `https://${process.env.OUTSETA_ID}.outseta.com/api/v1/`;
@@ -40,6 +41,8 @@ exports.sourceNodes = async (gatsbyUtils) => {
         Address = account.BillingAddress;
       }
 
+      const invalidStates = ["Outside the US or Canada", "Not Applicable"];
+
       if (Address?.City || Address?.State || Address?.Country) {
         createNode({
           id: createNodeId(`outseta-account-${account.Uid}`),
@@ -49,7 +52,7 @@ exports.sourceNodes = async (gatsbyUtils) => {
             contentDigest: createContentDigest(account),
           },
           city: Address?.City,
-          state: Address?.State,
+          state: invalidStates.includes(Address?.State) ? null : Address?.State,
           country: Address?.Country,
         });
       }
@@ -58,4 +61,39 @@ exports.sourceNodes = async (gatsbyUtils) => {
     page += 1;
     more = accounts.length > 0;
   } while (more);
+};
+
+const getCoordinates = async ({ city, state, country }) => {
+  const client = new Client({});
+
+  const { data } = await client.geocode({
+    params: {
+      address: `${city}, ${state}, ${country}`,
+      key: process.env.GOOGLE_MAPS_API_KEY,
+    },
+  });
+
+  if (data.status === "OK") {
+    return data.results[0].geometry.location;
+  }
+};
+
+exports.onCreateNode = async (gatsbyUtils) => {
+  const { node, actions, reporter } = gatsbyUtils;
+  const { createNodeField } = actions;
+
+  if (node.internal.type === "OutsetaAccount") {
+    const coordinates = await getCoordinates(node);
+
+    if (coordinates) {
+      reporter.info(
+        `Adding location to OutsetaAccount ${coordinates.lat}, ${coordinates.lng}`
+      );
+      createNodeField({
+        node,
+        name: "coordinates",
+        value: coordinates,
+      });
+    }
+  }
 };
